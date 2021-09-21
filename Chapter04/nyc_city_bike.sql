@@ -1,3 +1,10 @@
+### Check table metadata, columns and descriptions
+
+
+SELECT * EXCEPT(table_catalog, table_schema) FROM `bigquery-public-data.new_york_citibike`.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS
+WHERE table_name = "citibike_trips";
+
+
 ### Data Quality Check: the label tripduration should be not equal to null and less than 0 ###
 SELECT COUNT(*)
 FROM
@@ -56,6 +63,12 @@ GROUP BY
           year, month 
 ORDER BY
           year, month asc;
+
+         
+### Create the dataset:
+
+CREATE schema `04_nyc_bike_sharing`;
+
 
 ### Creation of the training table ###
 CREATE OR REPLACE TABLE `04_nyc_bike_sharing.training_table` AS
