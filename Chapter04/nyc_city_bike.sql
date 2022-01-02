@@ -1,8 +1,45 @@
 ### Check table metadata, columns and descriptions
 
+-- Check our local dataset
 
-SELECT * EXCEPT(table_catalog, table_schema) FROM `bigquery-public-data.new_york_citibike`.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS
+SELECT
+ * except(schema_owner, ddl)
+FROM
+ INFORMATION_SCHEMA.SCHEMATA; 
+
+SELECT
+  *
+FROM
+  `region-us`.INFORMATION_SCHEMA.TABLES;
+ 
+
+-- Check public/target dataset
+ 
+ -- Doesn't work for public datasets due to lacking permisions
+SELECT * FROM `bigquery-public-data`.INFORMATION_SCHEMA.SCHEMATA;
+
+-- Check tables involved
+
+SELECT * FROM `bigquery-public-data.new_york_citibike`.INFORMATION_SCHEMA.TABLES;
+
+-- Check the size of the tables involved
+
+SELECT table_name,partition_id,total_rows,total_logical_bytes/1.024e+6 logical_mbytes,
+total_billable_bytes/1.024e+6 billable_mbytes
+FROM `bigquery-public-data.new_york_citibike.INFORMATION_SCHEMA.PARTITIONS`;
+
+
+SELECT storage_tier, SUM(total_logical_bytes)/1024/1024 logical_mbytes, SUM(total_billable_bytes)/1024/1024 billable_mbytes
+FROM `bigquery-public-data.new_york_citibike.INFORMATION_SCHEMA.PARTITIONS`
+GROUP BY storage_tier;
+
+-- check tables info/metadata
+
+SELECT * EXCEPT(table_catalog, table_schema) 
+FROM `bigquery-public-data.new_york_citibike`.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS
 WHERE table_name = "citibike_trips";
+
+SELECT * FROM `bigquery-public-data.new_york_citibike.citibike_trips` limit 10;
 
 
 ### Data Quality Check: the label tripduration should be not equal to null and less than 0 ###
@@ -12,6 +49,15 @@ FROM
 WHERE
         tripduration is NULL
         OR tripduration<=0;
+
+SELECT COUNT(*), tripduration
+FROM
+        `bigquery-public-data.new_york_citibike.citibike_trips`
+WHERE
+        tripduration is NULL
+        OR tripduration<=0
+GROUP BY tripduration;
+
 
 ### Data Quality Check: max and min of trip duration ###
 SELECT  MIN (tripduration)/60 minimum_duration_in_minutes,
